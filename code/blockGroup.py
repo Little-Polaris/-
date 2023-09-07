@@ -30,7 +30,7 @@ class BlockGroup(object):
         self.pressTime = {}
         self.blockGroupType = blockGroupType
         self.isEliminating = False
-        self.dropInterval = 300
+        self.dropInterval = 1000
         for config in blockConfigList:
             blk = Block(config['blockType'], config['rowIdx'], config['colIdx'], config['blockShape'], config['blockGroupIdx'], config['blockRot'], width, height, relPos)
             self.blocks.append(blk)
@@ -102,7 +102,7 @@ class BlockGroup(object):
             if b:
                 for blk in self.blocks:
                     blk.doLeft()
-        elif pressed[K_RIGHT] and self.checkAndSetPressTime(K_RIGHT):
+        if pressed[K_RIGHT] and self.checkAndSetPressTime(K_RIGHT):
             b = True
             for blk in self.blocks:
                 if blk.isRightBound():
@@ -113,13 +113,20 @@ class BlockGroup(object):
                     blk.doRight()
                     
         if pressed[K_DOWN]:
-            self.dropInterval = 30
+            self.dropInterval = 50
         else:
-            self.dropInterval = 800
+            self.dropInterval = 1000
         
         if pressed[K_UP] and self.checkAndSetPressTime(K_UP):
+            flag = 1
             for blk in self.blocks:
-                blk.doRotate()
+                temp = (blk.blockRot + 1) % (len(BLOCK_SHAPE[blk.blockShape]))
+                if BLOCK_SHAPE[blk.blockShape][temp][blk.blockGroupIdx][1] + blk.baseColIdx > GAME_COL - 1:
+                    flag = 0
+                    break
+            if flag:
+                for blk in self.blocks:
+                    blk.doRotate()
                 
     def doEliminate(self, row):
         eliminateRow = {}
